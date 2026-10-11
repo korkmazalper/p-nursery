@@ -68,25 +68,48 @@
             border-radius: 4px;
         }
 
-        button {
-            background: var(--primary);
+        /* Question 2: .btn-primary styling code */
+        .btn-primary {
+            background-color: #8B5CF6;
             color: white;
-            border: none;
             padding: 10px 15px;
+            border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 14px;
         }
 
-        button:hover {
-            opacity: 0.9;
+        .btn-primary:hover {
+            background-color: #7C3AED;
+        }
+
+        /* Question 3: .btn-success styling code */
+        .btn-success {
+            background-color: #F59E0B;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-success:hover {
+            background-color: #D97706;
         }
 
         .btn-danger {
-            background: var(--danger);
+            background-color: #EF4444;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
         }
 
-        .btn-warning {
-            background: var(--success);
+        .btn-danger:hover {
+            background-color: #DC2626;
         }
 
         table {
@@ -156,8 +179,9 @@
                         <option value="Completed">Completed</option>
                     </select>
                 </div>
-                <button type="submit" id="saveBtn">Save Course</button>
-                <button type="button" id="cancelBtn" style="display:none; background:#6B7280;">Cancel</button>
+                <button type="submit" id="saveBtn" class="btn-primary">Save Course</button>
+                <button type="button" id="cancelBtn"
+                    style="display:none; background:#6B7280; color:white; border:none; padding:10px 15px; border-radius:4px; cursor:pointer;">Cancel</button>
             </form>
         </div>
 
@@ -181,7 +205,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:5000/api/courses'; // Node.js/Python varsayılan portu
+        const API_URL = 'http://localhost:5000/api/courses';
 
         const courseForm = document.getElementById('courseForm');
         const courseIdInput = document.getElementById('courseId');
@@ -226,7 +250,8 @@
           <td>${c.target_date}</td>
           <td>${c.status}</td>
           <td>
-            <button class="btn-warning" onclick="editCourse('${c.id}', '${escapeQuotes(c.name)}', '${escapeQuotes(c.description)}', '${c.target_date}', '${c.status}')">Edit</button>
+            <button class="btn-success" onclick="editCourse('${c.id}', '${escapeQuotes(c.name)}', '${escapeQuotes(c.description)}', '${c.target_date}', '${c.status}')">Edit</button>
+            <!-- Question 4: Delete button code -->
             <button class="btn-danger" onclick="deleteCourse('${c.id}')">Remove</button>
           </td>
         `;
