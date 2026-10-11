@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCraftHub: Learning Management</title>
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --success: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #CCC;
+            border-radius: 4px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-warning {
+            background: var(--success);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #DDD;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #F9FAFB;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CodeCraftHub: Your Learning Management Platform</h1>
+        </header>
+
+        <div id="alertBox" class="alert"></div>
+
+        <div class="card">
+            <h2 id="formTitle">Add New Course</h2>
+            <form id="courseForm">
+                <input type="hidden" id="courseId">
+                <div class="form-group">
+                    <label for="name">Course Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="target_date">Target Date</label>
+                    <input type="date" id="target_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" required>
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                <button type="submit" id="saveBtn">Save Course</button>
+                <button type="button" id="cancelBtn" style="display:none; background:#6B7280;">Cancel</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>All Courses</h2>
+            <div id="loading" style="display:none;">Loading...</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Target Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="courseTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/courses'; // Node.js/Python varsayılan portu
+
+        const courseForm = document.getElementById('courseForm');
+        const courseIdInput = document.getElementById('courseId');
+        const nameInput = document.getElementById('name');
+        const descInput = document.getElementById('description');
+        const dateInput = document.getElementById('target_date');
+        const statusInput = document.getElementById('status');
+        const tableBody = document.getElementById('courseTableBody');
+        const alertBox = document.getElementById('alertBox');
+        const loading = document.getElementById('loading');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        function showAlert(msg, isError = false) {
+            alertBox.textContent = msg;
+            alertBox.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+            alertBox.style.display = 'block';
+            setTimeout(() => alertBox.style.display = 'none', 4000);
+        }
+
+        async function fetchCourses() {
+            loading.style.display = 'block';
+            try {
+                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error('Failed to fetch courses');
+                const courses = await res.json();
+                renderTable(courses);
+            } catch (err) {
+                showAlert(err.message, true);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function renderTable(courses) {
+            tableBody.innerHTML = '';
+            courses.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+          <td>${c.id}</td>
+          <td>${c.name}</td>
+          <td>${c.description}</td>
+          <td>${c.target_date}</td>
+          <td>${c.status}</td>
+          <td>
+            <button class="btn-warning" onclick="editCourse('${c.id}', '${escapeQuotes(c.name)}', '${escapeQuotes(c.description)}', '${c.target_date}', '${c.status}')">Edit</button>
+            <button class="btn-danger" onclick="deleteCourse('${c.id}')">Remove</button>
+          </td>
+        `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function escapeQuotes(str) {
+            return (str || '').replace(/'/g, "\\'");
+        }
+
+        courseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = courseIdInput.value;
+            const payload = {
+                name: nameInput.value,
+                description: descInput.value,
+                target_date: dateInput.value,
+                status: statusInput.value
+            };
+
+            try {
+                let res;
+                if (id) {
+                    res = await fetch(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                if (!res.ok) throw new Error('Operation failed');
+                showAlert(`Course ${id ? 'updated' : 'created'} successfully!`);
+                resetForm();
+                fetchCourses();
+            } catch (err) {
+                showAlert(err.message, true);
+            }
+        });
+
+        window.editCourse = (id, name, desc, date, status) => {
+            courseIdInput.value = id;
+            nameInput.value = name;
+            descInput.value = desc;
+            dateInput.value = date;
+            statusInput.value = status;
+            document.getElementById('formTitle').textContent = 'Edit Course';
+            cancelBtn.style.display = 'inline-block';
+        };
+
+        window.deleteCourse = async (id) => {
+            if (!confirm('Are you sure you want to delete this course?')) return;
+            try {
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                if (!res.ok) throw new Error('Failed to delete course');
+                showAlert('Course deleted successfully!');
+                fetchCourses();
+            } catch (err) {
+                showAlert(err.message, true);
+            }
+        };
+
+        cancelBtn.addEventListener('click', resetForm);
+
+        function resetForm() {
+            courseIdInput.value = '';
+            courseForm.reset();
+            document.getElementById('formTitle').textContent = 'Add New Course';
+            cancelBtn.style.display = 'none';
+        }
+
+        fetchCourses();
+    </script>
+</body>
+</html>
