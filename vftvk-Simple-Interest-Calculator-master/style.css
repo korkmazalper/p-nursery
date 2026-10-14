@@ -1,0 +1,19 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: arial;
+}
+
+h1 {
+    color: grey;
+    font-family: arial;
+}
+
+.maindiv {
+    background-color: white;
+    color: black;
+    width: 300px;
+    padding: 20px;
+    border-radius: 25px;
+    margin: 0 auto;
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Result</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    {% if grade >= 80 %}
+        <div class="alert alert-success" role="alert">
+            Congratulations! You passed the exam with a score of {{ grade }}% ({{ total_score }}/{{ max_score }} pts).
+        </div>
+    {% else %}
+        <div class="alert alert-danger" role="alert">
+            Failed. Your score is {{ grade }}% ({{ total_score }}/{{ max_score }} pts). Please try again.
+        </div>
+    {% endif %}
+
+    <h3>Exam Results Details</h3>
+    {% for question in questions %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>{{ question.question_text }}</strong>
+            </div>
+            <div class="card-body">
+                {% for choice in question.choice_set.all %}
+                    <div class="p-2 mb-1 rounded {% if choice.is_correct %}bg-success text-white{% elif choice.id in selected_ids %}bg-danger text-white{% else %}bg-light{% endif %}">
+                        {{ choice.choice_text }}
+                        {% if choice.is_correct %}
+                            <strong>(Correct Answer)</strong>
+                        {% endif %}
+                        {% if choice.id in selected_ids %}
+                            <strong>(Your Choice)</strong>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+</body>
+</html>
